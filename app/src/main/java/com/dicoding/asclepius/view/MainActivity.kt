@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private var currentImageUri: Uri? = null
 
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -45,14 +46,17 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun startCrop(sourceUri: Uri) {
+
+    private fun startCrop(uri: Uri) {
         val destinationUri = Uri.fromFile(createTempFile("crop", ".jpg"))
 
-        val options = UCrop.Options()
-        options.setCompressionFormat(Bitmap.CompressFormat.JPEG)
-        options.setCompressionQuality(80)
+        val options = UCrop.Options().apply {
+            setCompressionQuality(80)
+            setHideBottomControls(true)
+            setToolbarTitle(getString(R.string.crop_image))
+        }
 
-        UCrop.of(sourceUri, destinationUri)
+        UCrop.of(uri, destinationUri)
             .withOptions(options)
             .start(this)
     }
@@ -77,8 +81,9 @@ class MainActivity : AppCompatActivity() {
             if (resultUri != null) {
                 currentImageUri = resultUri
                 showImage()
+
             } else {
-                showToast("Tidak ada gambar yang diedit")
+                showToast("gambar tidak ada")
             }
         } else if (resultCode == UCrop.RESULT_ERROR) {
             val error = UCrop.getError(data!!)
@@ -98,6 +103,7 @@ class MainActivity : AppCompatActivity() {
         if (uri != null) {
             currentImageUri = uri
             showImage()
+            startCrop(uri)
         } else {
             Log.d("Mengambil poto", "tidak ada poto yang ditampilkan")
         }
@@ -106,6 +112,7 @@ class MainActivity : AppCompatActivity() {
         currentImageUri?.let {
             Log.d("Image URI", "showImage: $it")
             if (currentImageUri != null) {
+
                 binding.previewImageView.setImageURI(it)
             }
         }

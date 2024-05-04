@@ -57,21 +57,25 @@ class ImageClassifierHelper(
         if (imageClassifier == null) {
             setupImageClassifier()
         }
+        var tensorImage: TensorImage? = null
 
-
-        val contentResolver = context.contentResolver
-        val bitmap: Bitmap? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val source = ImageDecoder.createSource(contentResolver, imageUri)
+        val imageProcessor = ImageProcessor.Builder()
+            .add(ResizeOp(224, 224, ResizeOp.ResizeMethod.NEAREST_NEIGHBOR))
+            .add(CastOp(DataType.UINT8))
+            .build()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val source = ImageDecoder.createSource(context.contentResolver, imageUri)
             ImageDecoder.decodeBitmap(source)
         } else {
-            MediaStore.Images.Media.getBitmap(contentResolver, imageUri)
+            MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+        }.copy(Bitmap.Config.ARGB_8888, true)?.let { bitmap ->
+            tensorImage = imageProcessor?.process(TensorImage.fromBitmap(bitmap))
         }
 
-        val tensorImage = TensorImage(DataType.FLOAT32)
-        tensorImage.load(bitmap)
-
         val results = imageClassifier?.classify(tensorImage)
-        classifierListener?.onResults(results)
+        classifierListener?.onResults(
+            results
+        )
     }
 
     interface ClassifierListener {

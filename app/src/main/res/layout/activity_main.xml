@@ -44,6 +44,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_place_holder" />
 
+
     <Button
         android:id="@+id/galleryButton"
         android:layout_width="0dp"
